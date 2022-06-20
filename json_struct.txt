@@ -1,0 +1,30 @@
+First Level Key: _via_settings
+	Second Level Key: ui
+		Third Level Key: annotation_editor_height
+		Third Level Key: annotation_editor_fontsize
+		Third Level Key: leftsidebar_width
+		Third Level Key: image_grid
+		Third Level Key: image
+	Second Level Key: core
+		Third Level Key: buffer_size
+		Third Level Key: filepath
+		Third Level Key: default_filepath
+	Second Level Key: project
+		Third Level Key: name
+First Level Key: _via_img_metadata
+	Second Level Key: B202005122-2.svs0
+		Third Level Key: filename
+		Third Level Key: size
+		Third Level Key: regions
+			Number of Annotations: 577
+			Forth Level Key: shape_attributes
+				Fifth Level Key: name
+				Fifth Level Key: anno_id
+				Fifth Level Key: all_points_x
+				Fifth Level Key: all_points_y
+			Forth Level Key: region_attributes
+				Fifth Level Key: bone_marrow
+First Level Key: _via_attributes
+	Second Level Key: region
+		Third Level Key: bone_marrow
+	Second Level Key: file
