@@ -5,6 +5,7 @@ import numpy as np
 from PIL import ImageDraw, Image
 from scipy.ndimage.morphology import binary_fill_holes
 import cv2
+import matplotlib.pyplot as plt 
 
 colors = [(0, 0, 255), (255, 255, 0), (0, 255, 0)]
 
@@ -66,10 +67,11 @@ class Json_Base:
         draw = ImageDraw.Draw(image)
         mask = Image.new('L', mask_shape, 0)
         draw_mask = ImageDraw.Draw(mask)
-        # print(mask.size)
         # # print(anno_class)
         color_id = 0
 
+        x_ranges = []
+        y_ranges = []
         for one_key in anno_class.keys():
             one_type = one_key
             if 'vessel' in one_type:
@@ -95,6 +97,9 @@ class Json_Base:
                     y_max = y.max() + 100
                     y_min = y.min() - 100
 
+                    x_ranges.append(x.max() - x.min())
+                    y_ranges.append(y.max() - y.min())
+
                     sign = False
                     last_x = 0.0
                     last_y = 0.0
@@ -105,39 +110,41 @@ class Json_Base:
                             last_y = one_y
                             sign = True
                         else:
-
-                            # draw.ellipse((one_x - 3, one_y - 3, one_x + 3, one_y + 3), fill=colors[color_id])
-                            draw.line([(last_x, last_y), (one_x, one_y)], fill = colors[color_id], width = 3)
+                            # draw.line([(last_x, last_y), (one_x, one_y)], fill = colors[color_id], width = 3)
                             draw_mask.line([(last_x, last_y), (one_x, one_y)], fill = (255), width = 1)
                             last_x = one_x
                             last_y = one_y
-                                # img[one_x, one_y] = colors[color_id] 
-                                # img[one_x - 1, one_y] = colors[color_id]
-                                # img[one_x + 1, one_y] = colors[color_id]
-                                # img[one_x - 2, one_y] = colors[color_id]
-                                # img[one_x + 2, one_y] = colors[color_id]
-                                # img[one_x, one_y - 1] = colors[color_id]
-                                # img[one_x, one_y + 1] = colors[color_id]
-                                # img[one_x, one_y - 2] = colors[color_id]
-                                # img[one_x, one_y + 2] = colors[color_id]
                         # except:
                         #     print(color_id)
 
                     #crop a single annotation
                     crop = image.crop((x_min, y_min, x_max, y_max))  
-                    crop.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.png')
+                    crop.save(self.case + str((x_min, y_min, x_max, y_max)) + '_ori.png')
+                    crop_mask = mask.crop((x_min, y_min, x_max, y_max)) 
+                    ImageDraw.floodfill(crop_mask, (0, 0), (255))
+                    # mask_npy = np.array(crop_mask) 
+                    # np.save(self.case + '_mask.npy', mask_npy)
+                    crop_mask.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.png')
+                    # np.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
 
             # save all versions
+
             # image.save(self.case + '_overlay.png') 
             # ImageDraw.floodfill(mask, (0, 0), (255))
+            # mask_npy = np.array(mask) 
+            # np.save(self.case + '_mask.npy', mask_npy)
             # mask.convert('RGBA')
             # mask.save(self.case + '_mask.png')
             # ori_image.save(self.case + '.png')
 
+            # # plt.hist(x_ranges)
+            # # plt.savefig("x_ranges.jpg")          
+            # plt.hist(y_ranges)
+            # plt.savefig("y_ranges.jpg")
 
-case = 'B202005122-2'
-json_path = '/home1/qiuliwang/Data/Glioma/20220502_labeled/' + case + '.json'
-wsi_path = '/home1/qiuliwang/Data/Glioma/20220502_labeled/' + case + '.svs'
+case = 'B202105664-3'
+json_path = '/home1/qiuliwang/Data/Glioma/svsLabel/' + case + '.json'
+wsi_path = '/home1/qiuliwang/Data/Glioma/svsData/' + case + '.svs'
 J = Json_Base(json_path, case)
 filename, regions = J.get_wsi_info()
 regions = J.get_annotations()
