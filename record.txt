@@ -1,0 +1,10 @@
+Get 3340 annotations.
+3119 < 512 * 512
+
+im2 thresholds [41.6, 60.0, 76.0, 94.0, 117.2, 149.8, 196.0]
+im3 thresholds [56.0, 94.0, 126.0, 156.6, 174.4, 193.0, 216.4]
+
+python calculate_average_thres.py 
+
+(base) qiuliwang@leadtek-H12DGO-6:~/Code/wsi_extractor_python/512Crop$ countfile 
+6238

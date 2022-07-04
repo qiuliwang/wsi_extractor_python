@@ -85,6 +85,7 @@ class Json_Base:
 
             one_type_anno = anno_class[one_type]
             if 'vessel' in one_type:
+                name = 1
                 # Drawing each annotation
                 for one_anno in one_type_anno:
                     x = np.array(one_anno[0])
@@ -92,39 +93,50 @@ class Json_Base:
                     x = x / downsamples#.astype(int)
                     y = y / downsamples#.astype(int)
 
-                    x_max = x.max() + 100
-                    x_min = x.min() - 100
-                    y_max = y.max() + 100
-                    y_min = y.min() - 100
-                    x_ranges.append(x.max() - x.min())
-                    y_ranges.append(y.max() - y.min())
+                    # x_max = x.max() + 100
+                    # x_min = x.min() - 100
+                    # y_max = y.max() + 100
+                    # y_min = y.min() - 100
 
-                    sign = False
-                    last_x = 0.0
-                    last_y = 0.0
-                    for one_x, one_y in zip(x, y):
-                        # try:
-                        if sign == False:
-                            last_x = one_x
-                            last_y = one_y
-                            sign = True
-                        else:
-                            # draw.line([(last_x, last_y), (one_x, one_y)], fill = colors[color_id], width = 3)
-                            draw_mask.line([(last_x, last_y), (one_x, one_y)], fill = (255), width = 1)
-                            last_x = one_x
-                            last_y = one_y
-                        # except:
-                        #     print(color_id)
+                    width = x.max() - x.min()
+                    height = y.max() - y.min()
 
-                    #crop a single annotation
-                    crop = image.crop((x_min, y_min, x_max, y_max))  
-                    crop.save(self.case + str((x_min, y_min, x_max, y_max)) + '_ori.png')
-                    # crop_mask = mask.crop((x_min, y_min, x_max, y_max)) 
-                    # ImageDraw.floodfill(crop_mask, (0, 0), (255))
-                    # mask_npy = np.array(crop_mask) 
-                    # np.save(self.case + '_mask.npy', mask_npy)
-                    # crop_mask.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.png')
-                    # np.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
+                    x_mid = width / 2 + x.min()
+                    y_mid = height / 2 + y.min()
+
+                    x_max = x_mid + 256
+                    x_min = x_mid - 256
+                    y_max = y_mid + 256
+                    y_min = y_mid - 256
+
+                    if width < 512 and height < 512:
+                        sign = False
+                        last_x = 0.0
+                        last_y = 0.0
+                        for one_x, one_y in zip(x, y):
+                            # try:
+                            if sign == False:
+                                last_x = one_x
+                                last_y = one_y
+                                sign = True
+                            else:
+                                # draw.line([(last_x, last_y), (one_x, one_y)], fill = colors[color_id], width = 3)
+                                draw_mask.line([(last_x, last_y), (one_x, one_y)], fill = (255), width = 1)
+                                last_x = one_x
+                                last_y = one_y
+                            # except:
+                            #     print(color_id)
+
+                        #crop a single annotation
+                        crop = image.crop((x_min, y_min, x_max, y_max))  
+                        crop.save(self.case + str(name) + '_ori.png')
+                        crop_mask = mask.crop((x_min, y_min, x_max, y_max)) 
+                        ImageDraw.floodfill(crop_mask, (0, 0), (255))
+                        mask_npy = np.array(crop_mask) 
+                        np.save(self.case + str(name) + '_mask.npy', mask_npy)
+                        crop_mask.save(self.case + str(name) + '_mask.png')
+                        # np.save(self.case + str(name) + '_mask.npy', mask_npy)
+                        name += 1
 
             # save all versions
 
