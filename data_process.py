@@ -1,4 +1,4 @@
-tiycimport openslide
+import openslide
 import os
 
 '''
