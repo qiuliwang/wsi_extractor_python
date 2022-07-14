@@ -32,7 +32,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 
 
-def compute_w_loader_(file_path, slide_id, output_path, wsi,
+def compute_w_loader_(file_path, slide_id, output_path, wsi, mask, 
      batch_size = 8, verbose = 0, print_every=20, pretrained=True, 
     custom_downsample=1, target_patch_size=-1):
     """
@@ -47,7 +47,7 @@ def compute_w_loader_(file_path, slide_id, output_path, wsi,
         custom_downsample: custom defined downscale factor of image patches
         target_patch_size: custom defined, rescaled image size before embedding
     """
-    dataset = Whole_Slide_Bag_FP(file_path=file_path, slide_id = slide_id, wsi=wsi, pretrained=False, 
+    dataset = Whole_Slide_Bag_FP(file_path=file_path, slide_id = slide_id, wsi=wsi, mask = mask, pretrained=False, 
         custom_downsample=custom_downsample, target_patch_size=target_patch_size)
     x, y = dataset[0]
     kwargs = {'num_workers': 4, 'pin_memory': True} if device.type == "cuda" else {}
@@ -111,14 +111,14 @@ if __name__ == '__main__':
         time_start = time.time()
         wsi = openslide.open_slide(slide_file_path)
 
-        mask = Image.fromarray(np.load('B202105664-3_mask.npy').transpose())
+        mask = Image.fromarray(np.load('B202105664-3_mask.npy'))
         print(mask.size)
         # mask = mask.resize((mask.size[0] * 2, mask.size[1] * 2), Image.ANTIALIAS)
         # print(mask.size)
         # mask = mask.convert('1')
 
-        # output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, 
-        #     batch_size = args.batch_size, verbose = 1, print_every = 20, 
-        #     custom_downsample=args.custom_downsample, target_patch_size=args.target_patch_size)
-        # time_elapsed = time.time() - time_start
-        # print('\ncomputing features for {} took {} s'.format(output_file_path, time_elapsed))
+        output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, mask, 
+            batch_size = args.batch_size, verbose = 1, print_every = 20, 
+            custom_downsample=args.custom_downsample, target_patch_size=args.target_patch_size)
+        time_elapsed = time.time() - time_start
+        print('\ncomputing features for {} took {} s'.format(output_file_path, time_elapsed))
