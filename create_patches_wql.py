@@ -43,7 +43,7 @@ def patching(WSI_object, **kwargs):
 
 
 def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_dir, 
-                  patch_size = 256, step_size = 256, 
+                  patch_size = 2048, step_size = 2048, 
                   seg_params = {'seg_level': -1, 'sthresh': 8, 'mthresh': 7, 'close': 4, 'use_otsu': True,
                   'keep_ids': 'none', 'exclude_ids': 'none'},
                   filter_params = {'a_t':100, 'a_h': 16, 'max_n_holes':8}, 
@@ -63,7 +63,8 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
         if 'DS_Store' not in one_slide:
             slides.append(one_slide)
             
-    slides = [slide for slide in slides if os.path.isfile(os.path.join(source, slide))]
+    number_of_process = 20
+    slides = [slide for slide in slides[ : 30] if os.path.isfile(os.path.join(source, slide))]
     if process_list is None:
         df = initialize_df(slides, seg_params, filter_params, vis_params, patch_params)
     
@@ -253,7 +254,7 @@ parser.add_argument('--source', type = str,
                     help='path to folder containing raw wsi image files')
 parser.add_argument('--step_size', type = int, default=256,
                     help='step_size')
-parser.add_argument('--patch_size', type = int, default=256,
+parser.add_argument('--patch_size', type = int, default=2048,
                     help='patch_size')
 parser.add_argument('--patch', default=False, action='store_true')
 parser.add_argument('--seg', default=False, action='store_true')

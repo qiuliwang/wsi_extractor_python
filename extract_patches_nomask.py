@@ -6,7 +6,7 @@ import random
 import numpy as np
 import pdb
 import time
-from datasets.dataset_h5 import Dataset_All_Bags, Whole_Slide_Bag_FP, Whole_Slide_Bag_FP_
+from datasets.dataset_h5 import Dataset_All_Bags, Whole_Slide_Bag_FP, Whole_Slide_Bag_No_Mask
 from torch.utils.data import DataLoader
 # from models.resnet_custom import resnet50_baseline
 import argparse
@@ -32,7 +32,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 
 
-def compute_w_loader_(file_path, slide_id, output_path, wsi, mask, 
+def compute_w_loader_(file_path, slide_id, output_path, wsi, 
      batch_size = 8, verbose = 0, print_every=20, pretrained=True, 
     custom_downsample=1, target_patch_size=-1):
     """
@@ -47,7 +47,7 @@ def compute_w_loader_(file_path, slide_id, output_path, wsi, mask,
         custom_downsample: custom defined downscale factor of image patches
         target_patch_size: custom defined, rescaled image size before embedding
     """
-    dataset = Whole_Slide_Bag_FP(file_path=file_path, slide_id = slide_id, wsi=wsi, mask = mask, pretrained=False, 
+    dataset = Whole_Slide_Bag_No_Mask(file_path=file_path, slide_id = slide_id, wsi=wsi, pretrained=False, 
         custom_downsample=custom_downsample, target_patch_size=target_patch_size)
     x, y = dataset[0]
     kwargs = {'num_workers': 4, 'pin_memory': True} if device.type == "cuda" else {}
@@ -122,12 +122,12 @@ if __name__ == '__main__':
             
             '''
 
-            mask = Image.fromarray(np.load('mid_size/' + slide_id + '_mask.npy'))
+            # mask = Image.fromarray(np.load('mid_size/' + slide_id + '_mask.npy'))
 
-            mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
-            mask = mask.convert('1')
+            # mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
+            # mask = mask.convert('1')
 
-            output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, mask, 
+            output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, 
                 batch_size = args.batch_size, verbose = 1, print_every = 20, 
                 custom_downsample=args.custom_downsample, target_patch_size=args.target_patch_size)
             time_elapsed = time.time() - time_start

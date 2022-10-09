@@ -1,5 +1,10 @@
 ### create patches
-python create_patches_wql.py --source /home1/qiuliwang/Data/Glioma/testSVS --save_dir Glioma_DataResult_2048 --patch_size 2048 --seg --patch --stitch
+python create_patches_wql.py --source /home1/qiuliwang/Data/Glioma/svsData --save_dir Glioma_DataResult_512 --patch_size 512 --seg --patch --stitch
+
+### get annotations
+python get_annotation_slide.py
 
 ### extract patches
-CUDA_VISIBLE_DEVICES=7 python extract_patches.py --data_h5_dir Glioma_DataResult_2048/ --data_slide_dir /home1/qiuliwang/Data/Glioma/testSVS --csv_path Glioma_DataResult_2048/process_list_autogen.csv --feat_dir Glioma_Extracted_Patch_2048 --batch_size 1024 --slide_ext .svs
+CUDA_VISIBLE_DEVICES=7 python extract_patches_nomask.py --data_h5_dir CAMELYON_DataResult_512/ --data_slide_dir /home1/qiuliwang/Data/CAMELYON17/training/center_0 --csv_path CAMELYON_DataResult_512/process_list_autogen.csv --feat_dir CAMELYON_Extracted_Patch_512 --batch_size 512 --slide_ext .tif
+
+CUDA_VISIBLE_DEVICES=7 python extract_patches_nomask.py --data_h5_dir Glioma_DataResult_512/ --data_slide_dir /home1/qiuliwang/Data/Glioma/svsData --csv_path Glioma_DataResult_512/process_list_autogen.csv --feat_dir Glioma_Extracted_Patch_512 --batch_size 512 --slide_ext .svs

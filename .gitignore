@@ -5,3 +5,5 @@
 *.zip
 Glioma_DataResult_512/
 Glioma_DataResult_2048/
+*.csv
+CAMELYON_DataResult_512/

@@ -159,7 +159,6 @@ class Whole_Slide_Bag_FP(Dataset):
     def __init__(self,
         file_path,
         wsi,
-        mask, 
         slide_id,
         pretrained=False,
         custom_transforms=None,
@@ -253,4 +252,79 @@ class Dataset_All_Bags(Dataset):
 
 
 
+
+class Whole_Slide_Bag_No_Mask(Dataset):
+    def __init__(self,
+        file_path,
+        wsi,
+        slide_id,
+        pretrained=False,
+        custom_transforms=None,
+        custom_downsample=1,
+        target_patch_size=-1
+        ):
+        """
+        Args:
+            file_path (string): Path to the .h5 file containing patched data.
+            pretrained (bool): Use ImageNet transforms
+            custom_transforms (callable, optional): Optional transform to be applied on a sample
+            custom_downsample (int): Custom defined downscale factor (overruled by target_patch_size)
+            target_patch_size (int): Custom defined image size before embedding
+        """
+        self.pretrained=pretrained
+        self.wsi = wsi
+        self.slide_id = slide_id
+        if not custom_transforms:
+            self.roi_transforms = eval_transforms(pretrained=pretrained)
+        else:
+            self.roi_transforms = custom_transforms
+
+        self.file_path = file_path
+
+        with h5py.File(self.file_path, "r") as f:
+            dset = f['coords']
+            self.patch_level = f['coords'].attrs['patch_level']
+            self.patch_size = f['coords'].attrs['patch_size']
+            self.length = len(dset)
+            if target_patch_size > 0:
+                self.target_patch_size = (target_patch_size, ) * 2
+            elif custom_downsample > 1:
+                self.target_patch_size = (self.patch_size // custom_downsample, ) * 2
+            else:
+                self.target_patch_size = None
+        self.summary()
+            
+    def __len__(self):
+        return self.length
+
+    def summary(self):
+        hdf5_file = h5py.File(self.file_path, "r")
+        dset = hdf5_file['coords']
+        for name, value in dset.attrs.items():
+            print(name, value)
+
+        print('\nfeature extraction settings')
+        print('target patch size: ', self.target_patch_size)
+        print('pretrained: ', self.pretrained)
+        print('transformations: ', self.roi_transforms)
+        print('dset: ', len(dset))
+
+    def __getitem__(self, idx):
+        with h5py.File(self.file_path,'r') as hdf5_file:
+            coord = hdf5_file['coords'][idx]
+        
+        # cut image
+        img = self.wsi.read_region(coord, self.patch_level, (self.patch_size, self.patch_size)).convert('RGB')
+        # img = img.resize((self.patch_size // 4, self.patch_size // 4), Image.ANTIALIAS)
+        status = ImageStat.Stat(img).var
+
+            
+        if status[0] > 100 and status[0] < 6000 and status[1] > 100 and status[1] < 6000 and status[2] > 100 and status[2] < 6000: 
+            # if random.randint(1,10) % 5 == 0:
+            img.save('Glioma_Extracted_Patch_512_no_mask/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg')
+			
+        if self.target_patch_size is not None:
+            img = img.resize(self.target_patch_size)
+        img = self.roi_transforms(img).unsqueeze(0)
+        return img, coord
 

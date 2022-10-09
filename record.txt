@@ -8,3 +8,10 @@ python calculate_average_thres.py
 
 (base) qiuliwang@leadtek-H12DGO-6:~/Code/wsi_extractor_python/512Crop$ countfile 
 6238
+
+
+(base) qiuliwang@leadtek-H12DGO-6:~/Code/wsi_extractor_python/CAMELYON_Extracted_Patch_512$ countfile 
+143433
+
+(base) qiuliwang@leadtek-H12DGO-6:~/Code/wsi_extractor_python/Glioma_Extracted_Patch_512_no_mask$ countfile 
+182535
