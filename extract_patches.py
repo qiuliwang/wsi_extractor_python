@@ -97,7 +97,7 @@ if __name__ == '__main__':
     for bag_candidate_idx in range(total):
     # for bag_candidate_idx in range(10, 50):
         slide_id = bags_dataset[bag_candidate_idx].split(args.slide_ext)[0]
-        if True:
+        if slide_id == 'B202105664-3':
             bag_name = slide_id+'.h5'
             h5_file_path = os.path.join(args.data_h5_dir, 'patches', bag_name)
             slide_file_path = os.path.join(args.data_slide_dir, slide_id+args.slide_ext)
@@ -122,9 +122,9 @@ if __name__ == '__main__':
             
             '''
 
-            mask = Image.fromarray(np.load('mid_size/' + slide_id + '_mask.npy'))
+            mask = Image.fromarray(np.load('full_size_mask/' + slide_id + '_mask.npy'))
 
-            mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
+            # mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
             mask = mask.convert('1')
 
             output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, mask, 

@@ -10,11 +10,11 @@ import tqdm
 
 colors = [(0, 0, 255), (255, 255, 0), (0, 255, 0)]
 
-files = os.listdir('/home1/qiuliwang/Data/Glioma/20220502_labeled/')
-json_files = []
-for one_file in files:
-    if '.json' in one_file:
-        json_files.append(one_file)
+# files = os.listdir('/home1/qiuliwang/Data/Glioma/20220502_labeled/')
+# json_files = []
+# for one_file in files:
+#     if '.json' in one_file:
+#         json_files.append(one_file)
 
 class Json_Base:
     def __init__(self, path, case):
@@ -104,16 +104,12 @@ class Json_Base:
                     last_x = 0.0
                     last_y = 0.0
                     for one_x, one_y in zip(x, y):
-                        # try:
-                        if sign == False:
-                            last_x = one_x
-                            last_y = one_y
-                            sign = True
-                        else:
-                            draw.line([(last_x, last_y), (one_x, one_y)], fill = colors[color_id], width = 3)
-                            draw_mask.line([(last_x, last_y), (one_x, one_y)], fill = (255), width = 1)
-                            last_x = one_x
-                            last_y = one_y
+                        xy_list.append((one_x, one_y))
+
+                    draw.polygon(xy_list, fill=None, outline=(255))
+                    draw_mask.polygon(xy_list, fill=(255), outline=None)
+
+
                         # except:
                         #     print(color_id)
 
@@ -135,18 +131,97 @@ class Json_Base:
             mask_npy = np.array(mask) 
 
             np.save(self.case + '_mask.npy', mask_npy)
-            mask.convert('RGBA')
-            mask.save(self.case + '_mask.png')
-            ori_image.save(self.case + '.png')
+            # mask.convert('RGBA')
+            # mask.save(self.case + '_mask.png')
+            # ori_image.save(self.case + '.png')
 
             # # plt.hist(x_ranges)
             # # plt.savefig("x_ranges.jpg")          
             # plt.hist(y_ranges)
             # plt.savefig("y_ranges.jpg")
 
+    def Paint_noImage(self, downsamples, mask_shape):
+        anno_class = self.anno_class
+        # ori_image = image.copy()
+        # img = image.load()
+        # draw = ImageDraw.Draw(image)
+        mask = Image.new('L', mask_shape, 0)
+        draw_mask = ImageDraw.Draw(mask)
+        # # print(anno_class)
+        color_id = 0
+
+        x_ranges = []
+        y_ranges = []
+        for one_key in anno_class.keys():
+            one_type = one_key
+            if 'vessel' in one_type:
+                color_id = 0
+            elif 'necrosis' in one_type:
+                color_id = 1
+            else:
+                color_id = 2
+            print((one_type))
+            # print(color_id)
+
+            one_type_anno = anno_class[one_type]
+            if 'vessel' in one_type:
+                # Drawing each annotation
+                for one_anno in tqdm.tqdm(one_type_anno):
+                    x = np.array(one_anno[0])
+                    y = np.array(one_anno[1])
+                    x = x / downsamples#.astype(int)
+                    y = y / downsamples#.astype(int)
+
+                    x_max = x.max() + 100
+                    x_min = x.min() - 100
+                    y_max = y.max() + 100
+                    y_min = y.min() - 100
+                    x_ranges.append(x.max() - x.min())
+                    y_ranges.append(y.max() - y.min())
+
+                    sign = False
+                    last_x = 0.0
+                    last_y = 0.0
+                    xy_list = []
+                    for one_x, one_y in zip(x, y):
+                        xy_list.append((one_x, one_y))
+                    
+                    draw_mask.polygon(xy_list, fill=(255), outline=None)
+
+                        # except:
+                        #     print(color_id)
+
+                    #crop a single annotation
+                    # crop = image.crop((x_min, y_min, x_max, y_max))  
+                    # crop.save(self.case + str((x_min, y_min, x_max, y_max)) + '_ori.png')
+                    # crop_mask = mask.crop((x_min, y_min, x_max, y_max)) 
+                    # ImageDraw.floodfill(crop_mask, (0, 0), (255))
+                    # mask_npy = np.array(crop_mask) 
+                    # np.save(self.case + '_mask.npy', mask_npy)
+                    # crop_mask.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.png')
+                    # np.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
+
+            # save all versions
+
+            # image.save(self.case + '_overlay.png') 
+            print('Saving mask...')
+            # ImageDraw.floodfill(mask, (0, 0), (255))
+            mask_npy = np.array(mask) 
+
+            np.save(self.case + '_mask.npy', mask_npy)
+            # mask.convert('RGBA')
+            # mask.save(self.case + '_mask.png')
+            # ori_image.save(self.case + '.png')
+
+            # # plt.hist(x_ranges)
+            # # plt.savefig("x_ranges.jpg")          
+            # plt.hist(y_ranges)
+            # plt.savefig("y_ranges.jpg")
 
 cases = os.listdir('/home1/qiuliwang/Data/Glioma/svsData/')
 count = 0
+sign = 0
+print(len(cases))
 for one_case in cases:
     # case = 'B202105664-3'
     wsi_path = '/home1/qiuliwang/Data/Glioma/svsData/' + one_case
@@ -159,15 +234,15 @@ for one_case in cases:
 
 
     slide = openslide.OpenSlide(wsi_path)
-    level_index = 1
+    level_index = 3
 
     print('Image dimension: ', slide.level_dimensions[level_index])
     print('Image downsamples: ', slide.level_downsamples[level_index])
-    slide_pixels = slide.read_region((0, 0), level_index, slide.level_dimensions[level_index])
-    slide_pixels = slide_pixels.convert('RGB')
-    mask_shape = slide_pixels.size
-    print('Shape: ', mask_shape)
+    # slide_pixels = slide.read_region((0, 0), level_index, slide.level_dimensions[level_index])
+    # slide_pixels = slide_pixels.convert('RGB')
+    mask_shape = slide.level_dimensions[level_index]
+    print('Shape: ', slide.level_dimensions[level_index])
 
-    J.Paint(slide_pixels, slide.level_downsamples[level_index], mask_shape)
+    J.Paint(slide.level_downsamples[level_index], mask_shape)
 
 print("Number of all annotations: ", count)

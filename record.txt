@@ -15,3 +15,5 @@ python calculate_average_thres.py
 
 (base) qiuliwang@leadtek-H12DGO-6:~/Code/wsi_extractor_python/Glioma_Extracted_Patch_512_no_mask$ countfile 
 182535
+
+B202105664-3
