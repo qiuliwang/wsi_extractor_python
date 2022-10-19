@@ -103,6 +103,7 @@ class Json_Base:
                     sign = False
                     last_x = 0.0
                     last_y = 0.0
+                    xy_list = []
                     for one_x, one_y in zip(x, y):
                         xy_list.append((one_x, one_y))
 
@@ -125,15 +126,15 @@ class Json_Base:
 
             # save all versions
 
-            # image.save(self.case + '_overlay.png') 
+            image.save(self.case + '_overlay.png') 
             print('Saving mask...')
-            ImageDraw.floodfill(mask, (0, 0), (255))
+            # ImageDraw.floodfill(mask, (0, 0), (255))
             mask_npy = np.array(mask) 
 
             np.save(self.case + '_mask.npy', mask_npy)
-            # mask.convert('RGBA')
-            # mask.save(self.case + '_mask.png')
-            # ori_image.save(self.case + '.png')
+            mask.convert('RGBA')
+            mask.save(self.case + '_mask.png')
+            ori_image.save(self.case + '.png')
 
             # # plt.hist(x_ranges)
             # # plt.savefig("x_ranges.jpg")          
@@ -222,6 +223,8 @@ cases = os.listdir('/home1/qiuliwang/Data/Glioma/svsData/')
 count = 0
 sign = 0
 print(len(cases))
+
+training_list = []
 for one_case in cases:
     # case = 'B202105664-3'
     wsi_path = '/home1/qiuliwang/Data/Glioma/svsData/' + one_case
@@ -231,18 +234,23 @@ for one_case in cases:
     filename, regions = J.get_wsi_info()
     count += len(regions)
     regions = J.get_annotations()
-
+    
+    print(one_case + ', ' + str(len(J.regions)))
+    if len(J.regions) >= 1000:
+        training_list.append(one_case + ', ' + str(len(J.regions)))
 
     slide = openslide.OpenSlide(wsi_path)
     level_index = 3
 
     print('Image dimension: ', slide.level_dimensions[level_index])
     print('Image downsamples: ', slide.level_downsamples[level_index])
-    # slide_pixels = slide.read_region((0, 0), level_index, slide.level_dimensions[level_index])
-    # slide_pixels = slide_pixels.convert('RGB')
+    slide_pixels = slide.read_region((0, 0), level_index, slide.level_dimensions[level_index])
+    slide_pixels = slide_pixels.convert('RGB')
     mask_shape = slide.level_dimensions[level_index]
     print('Shape: ', slide.level_dimensions[level_index])
 
-    J.Paint(slide.level_downsamples[level_index], mask_shape)
+    J.Paint(slide_pixels, slide.level_downsamples[level_index], mask_shape)
 
 print("Number of all annotations: ", count)
+
+print(training_list)

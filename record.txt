@@ -17,3 +17,92 @@ python calculate_average_thres.py
 182535
 
 B202105664-3
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202012830-7.json
+        Preliminary check.
+        Get 21 annotations.
+B202012830-7.svs, 1
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202100269-6.json
+        Preliminary check.
+        Get 44 annotations.
+B202100269-6.svs, 1
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202104270-3.json
+        Preliminary check.
+        Get 689 annotations.
+B202104270-3.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201812997-2.json
+        Preliminary check.
+        Get 404 annotations.
+B201812997-2.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201902463-2.json
+        Preliminary check.
+        Get 1000 annotations.
+B201902463-2.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202105664-14.json
+        Preliminary check.
+        Get 643 annotations.
+B202105664-14.svs, 3
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202012437-4.json
+        Preliminary check.
+        Get 2164 annotations.
+B202012437-4.svs, 3
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202005122-2.json
+        Preliminary check.
+        Get 577 annotations.
+B202005122-2.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201814368-5.json
+        Preliminary check.
+        Get 438 annotations.
+B201814368-5.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202105664-3.json
+        Preliminary check.
+        Get 3340 annotations.
+B202105664-3.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201813472-2.json
+        Preliminary check.
+        Get 673 annotations.
+B201813472-2.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201812997-1.json
+        Preliminary check.
+        Get 323 annotations.
+B201812997-1.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202005692-5.json
+        Preliminary check.
+        Get 1318 annotations.
+B202005692-5.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201911880-10.json
+        Preliminary check.
+        Get 377 annotations.
+B201911880-10.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B201902483-5.json
+        Preliminary check.
+        Get 147 annotations.
+B201902483-5.svs, 1
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202005499-4.json
+        Preliminary check.
+        Get 370 annotations.
+B202005499-4.svs, 2
+
+Processing JSON file:  /home1/qiuliwang/Data/Glioma/svsLabel/B202005279-3.json
+        Preliminary check.
+        Get 303 annotations.
+B202005279-3.svs, 1
+Number of all annotations:  12831
+
+['B201902463-2.svs, 1000', 'B202012437-4.svs, 2164', 'B202105664-3.svs, 3340', 'B202005692-5.svs, 1318']
+This four slides have 7822 annotations

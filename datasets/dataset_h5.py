@@ -228,7 +228,7 @@ class Whole_Slide_Bag_FP(Dataset):
 
         # print('crop_mask.size', crop_mask.size)
         
-        base_dir = 'Glioma_Extracted_Patch_512/' + self.slide_id
+        base_dir = 'Glioma_Extracted_Patch_512_nomask/' + self.slide_id
         if not os.path.exists(base_dir):
             os.mkdir(base_dir)
 
@@ -326,7 +326,7 @@ class Whole_Slide_Bag_No_Mask(Dataset):
             
         if status[0] > 100 and status[0] < 6000 and status[1] > 100 and status[1] < 6000 and status[2] > 100 and status[2] < 6000: 
             # if random.randint(1,10) % 5 == 0:
-            img.save('Glioma_Extracted_Patch_512_no_mask/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg')
+            img.save('Glioma_Extracted_Patch_512_nomask/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg')
 			
         if self.target_patch_size is not None:
             img = img.resize(self.target_patch_size)
