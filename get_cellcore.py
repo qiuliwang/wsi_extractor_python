@@ -411,7 +411,7 @@ def get_cells(crushed):
 def get_cells2(crushed):
     # not a perfect function, needs to be fixed
 
-    get_cells2 = np.where(crushed > 127, 0.0, 255.0)
+    res = np.where(crushed > 127, 255.0, 0.0)
     # crushed = FillHole(crushed)
     # kernel = np.ones((5, 5), dtype=np.uint8)
     # crushed = cv2.dilate(crushed, kernel, 1)
@@ -420,7 +420,7 @@ def get_cells2(crushed):
     # crushed = cv2.erode(crushed, kernel, 1)
     # crushed = cv2.erode(crushed, kernel, 1)
 
-    return get_cells2
+    return res
 
 def get_centroid(img):
     img = np.uint8(img.copy())
@@ -454,83 +454,52 @@ if __name__ == '__main__':
     base_dir = 'Glioma_Extracted_Patch_512/'
     ids = os.listdir(base_dir)
 
-    for one_id in tqdm.tqdm(ids[:1]):
-        start_ave = [0 for x in range(k)]
-        print(start_ave)
-        files = os.listdir(os.path.join(base_dir, one_id))
-        ori = []
+    for one_id in tqdm.tqdm(ids):
+        if 'B202105664-3' in one_id:
+            start_ave = [0 for x in range(k)]
+            print(start_ave)
+            files = os.listdir(os.path.join(base_dir, one_id))
+            ori = []
 
-        for one_file in files:
-            if 'mask' not in one_file:
-                ori.append(one_file)
-            
-        print('Number of ori: ', len(ori))
+            for one_file in files:
+                if 'mask' not in one_file and 'tissues' not in one_file and 'remove' not in one_file:
+                    ori.append(one_file)
+                
+            print('Number of ori: ', len(ori))
 
-        temp = 0
-        for one_jpeg in tqdm.tqdm(ori):
-            temp += 1
-            filename_png = os.path.join(base_dir, one_id, one_jpeg)
-            # filename = filename_png[ : len(filename_png) - 8]
-            filename = filename_png.split('.jpeg')[0]
+            temp = 0
+            for one_jpeg in tqdm.tqdm(ori):
 
-            # # savename = filename + '_im3.png'
-            im1, im2, im3, grey, im = imager.read(filename_png)
-            # imager.write(prefix + '.jpeg', im)
+                # print(one_jpeg)
+                temp += 1
+                filename_png = os.path.join(base_dir, one_id, one_jpeg)
+                # filename = filename_png[ : len(filename_png) - 8]
+                filename = filename_png.split('.jpeg')[0]
 
-            # print(USE_PIL)
-            otsu = OtsuFastMultithreshold()        
-            otsu.load_image(im3)
-            # savename = os.path.join(base_dir, one_id, one_jpeg.split('.jpeg')[0] + '_tissues.jpeg')
-            
-            if temp < 1000:
-            # print(kThresholds)
-                kThresholds = otsu.calculate_k_thresholds(k)
-                for i in range(k):
-                    start_ave[i] += kThresholds[i]
+                # # savename = filename + '_im3.png'
+                im1, im2, im3, grey, im = imager.read(filename_png)
+                # imager.write(prefix + '.jpeg', im)
 
-                # print(start_ave)
-
-                ave_thres = [float(x) / temp for x in start_ave]
-                if temp % 100 == 0 and temp > 99:
-                    print(ave_thres)
-            else:
-                ave_thres = [float(x) / 999 for x in start_ave]
-
-            crushed1 = otsu.apply_thresholds_to_image(kThresholds[:6])
-
-            crushed1_ = get_cells2(crushed1)
-                        
-            savename = os.path.join(base_dir, one_id, one_jpeg.split('.jpeg')[0] + '_tissues.jpeg')
-            imager.write(savename, crushed1)
-            savename = os.path.join(base_dir, one_id, one_jpeg.split('.jpeg')[0] + '_tissues_binary.jpeg')
-            imager.write(savename, crushed1_)
-'''
-    files = os.listdir('/home1/qiuliwang/Code/wsi_extractor_python/512Crop/')
-    thresholds_list = []
-    imager = ImageReadWrite()
-    
-    k = 6
-
-    for one_file in tqdm.tqdm(files[:15]):
-        prefix = one_file.split('.')[0]
-        filename_png = '/home1/qiuliwang/Code/wsi_extractor_python/512Crop/' + one_file
-        filename = filename_png[ : len(filename_png) - 8]
-        # print(filename_png)
-        # savename = filename + '_im3.png'
-        im1, im2, im3, grey, im = imager.read(filename_png)
-        # imager.write(prefix + '.jpeg', im)
-
-        # print(USE_PIL)
-        otsu = OtsuFastMultithreshold()        
-        otsu.load_image(im3)
-        for k in [7]:
-            savename = prefix + 'tissues_' + str(6) + '.jpeg'
-            print(prefix)
-            kThresholds = otsu.calculate_k_thresholds(k)
-            print(kThresholds)
-            crushed1 = otsu.apply_thresholds_to_image(kThresholds[:6])
-
-            crushed1_ = get_cells2(crushed1)
-            # get_centroid(crushed)
-            imager.write(savename, crushed1)
-'''
+                # print(USE_PIL)
+                otsu = OtsuFastMultithreshold()        
+                otsu.load_image(im3)
+                # savename = os.path.join(base_dir, one_id, one_jpeg.split('.jpeg')[0] + '_tissues.jpeg')
+                
+                if temp < 1000:
+                # print(kThresholds)
+                    kThresholds = otsu.calculate_k_thresholds(k)
+                    for i in range(k):
+                        start_ave[i] += kThresholds[i]
+                    ave_thres = [float(x) / temp for x in start_ave]
+                    if temp % 100 == 0 and temp > 99:
+                        print(ave_thres)
+                else:
+                    ave_thres = [float(x) / 999 for x in start_ave]
+                # print('kThresholds: ', kThresholds)
+                # crushed1 = otsu.apply_thresholds_to_image(ave_thres[:6])
+                
+                crushed1 = np.where(im3 > ave_thres[1], 255.0, 0.0)
+                crushed1_ = get_cells2(crushed1)
+                savename = os.path.join(base_dir, one_id, one_jpeg.split('.jpeg')[0] + '_tissues_binary.jpeg')
+                imager.write(savename, crushed1_)
+                # print(savename)

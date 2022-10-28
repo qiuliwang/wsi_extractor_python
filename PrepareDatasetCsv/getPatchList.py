@@ -7,6 +7,10 @@ import csv
 Getting all patches and label weather or not there are vessels in this patch.
 '''
 
+training_list = ['B201902483-5', 'B202005279-3', 'B201812997-1', 'B202005499-4', 'B201911880-10', 'B201812997-2', 'B201814368-5', 'B202005122-2', 'B202105664-14', 'B201813472-2', 'B202104270-3']
+
+testing_list = ['B202012437-4', 'B202105664-3']
+
 data_path = '/home1/qiuliwang/Code/wsi_extractor_python/Glioma_Extracted_Patch_512/'
 ids = os.listdir(data_path)
 
@@ -14,14 +18,15 @@ print('\nCounting files: \n')
 
 all_files = []
 for id in ids:
-    files = os.listdir(os.path.join(data_path, id))
-    for onefile in files:
-        # print(os.path.join(data_path, id, onefile))
-        all_files.append(os.path.join(data_path, id, onefile))
+    if id in training_list:
+        files = os.listdir(os.path.join(data_path, id))
+        for onefile in files:
+            # print(os.path.join(data_path, id, onefile))
+            all_files.append(os.path.join(data_path, id, onefile))
 
 print('Number of files: ', len(all_files))
 
-percent = 0.8
+percent = 1.0
 all_patches = []
 
 print('\nCounting patches: \n')
@@ -32,7 +37,7 @@ labeled_patches_0 = []
 
 for one_file in tqdm.tqdm(all_files):
     patch, filetype = one_file.split('.')
-    if patch not in all_patches and 'mask' not in patch:
+    if patch not in all_patches and 'mask' not in patch and 'tissues' not in patch and 'remove' not in patch:
         all_patches.append(patch)
         mask = np.load(os.path.join(data_path, patch + '_mask.npy'))
         if mask.max() == 255:

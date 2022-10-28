@@ -1,3 +1,8 @@
+'''
+Getting vessels from slices.
+Each patch has a vessel in its center.
+'''
+
 import json
 import os
 import openslide
@@ -7,6 +12,7 @@ from scipy.ndimage.morphology import binary_fill_holes
 import cv2
 import matplotlib.pyplot as plt 
 import tqdm
+import threading
 
 colors = [(0, 0, 255), (255, 255, 0), (0, 255, 0)]
 
@@ -219,15 +225,95 @@ class Json_Base:
             # plt.hist(y_ranges)
             # plt.savefig("y_ranges.jpg")
 
+    def process_vessel_single(self, ori_image, one_type_anno, mask_shape, downsamples):
+        for one_anno in tqdm.tqdm(one_type_anno):
+            x = np.array(one_anno[0])
+            y = np.array(one_anno[1])
+            x = x / downsamples#.astype(int)
+            y = y / downsamples#.astype(int)
+
+            x_max = int(x.max() + 10)
+            x_min = int(x.min() - 10)
+            y_max = int(y.max() + 10)
+            y_min = int(y.min() - 10)
+
+            sign = False
+            last_x = 0.0
+            last_y = 0.0
+            xy_list = []
+            for one_x, one_y in zip(x, y):
+                xy_list.append((one_x, one_y))
+            
+            mask = Image.new('L', mask_shape, 0)
+            draw_mask = ImageDraw.Draw(mask)
+            # draw.polygon(xy_list, fill=None, outline=(255))
+            draw_mask.polygon(xy_list, fill=(255), outline=None)
+
+
+                # except:
+                #     print(color_id)
+
+            # crop a single annotation
+            sign = 512
+            # if abs(x_max - x_min) <= sign and abs(y_max - y_min) <= sign and abs(x_max - x_min) > sign / 2 and abs(y_max - y_min) > sign / 2 :
+            if abs(x_max - x_min) <= sign and abs(y_max - y_min) <= sign :
+                mid_x = x_min + (abs(x_max - x_min) / 2)
+                mid_y = y_min + (abs(y_max - y_min) / 2)
+
+                crop = ori_image.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2))  
+                crop.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_ori.jpeg')
+                crop_mask = mask.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) 
+                # ImageDraw.floodfill(crop_mask, (0, 0), (255))
+                # mask_npy = np.array(crop_mask) 
+                # np.save(self.case + '_mask.npy', mask_npy)
+                crop_mask.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask.jpeg')
+                # np.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
+
+    def Paint_vessels(self, image, downsamples, mask_shape):
+        anno_class = self.anno_class
+        ori_image = image.copy()
+        # img = image.load()
+        draw = ImageDraw.Draw(image)
+
+        # # print(anno_class)
+        color_id = 0
+
+        x_ranges = []
+        y_ranges = []
+        for one_key in anno_class.keys():
+            one_type = one_key
+            if 'vessel' in one_type:
+                color_id = 0
+            elif 'necrosis' in one_type:
+                color_id = 1
+            else:
+                color_id = 2
+            print((one_type))
+            # print(color_id)
+
+            one_type_anno = anno_class[one_type]
+            if 'vessel' in one_type:
+                # Drawing each annotation
+                # self.process_vessel_single(ori_image, one_type_anno, mask_shape, downsamples)
+                
+                ttt = len(one_type_anno) // 2
+                thread1 = threading.Thread(name='t1',target= self.process_vessel_single,args=(ori_image, one_type_anno[ : ttt], mask_shape, downsamples))
+                thread2 = threading.Thread(name='t2',target= self.process_vessel_single,args=(ori_image, one_type_anno[ttt : ], mask_shape, downsamples))
+                # thread3 = threading.Thread(name='t3',target= self.process_vessel_single,args=(ori_image, one_type_anno[ttt + ttt : ], mask_shape, downsamples))
+                thread1.start()   #启动线程1
+                thread2.start()   #启动线程2
+                # thread3.start()   #启动线程2
+
+
 cases = os.listdir('/home1/qiuliwang/Data/Glioma/svsData/')
 count = 0
 sign = 0
 print(len(cases))
 
-training_list = []
+training_list = ['B202012437-4.svs', 'B202105664-3.svs']
 for one_case in cases:
-    if 'B202105664-3' in one_case:
-
+    if one_case in training_list:
+        print(one_case)
         wsi_path = '/home1/qiuliwang/Data/Glioma/svsData/' + one_case
         json_path = '/home1/qiuliwang/Data/Glioma/svsLabel/' + one_case[ : len(one_case) - 4] + '.json'
 
@@ -241,7 +327,7 @@ for one_case in cases:
             training_list.append(one_case + ', ' + str(len(J.regions)))
 
         slide = openslide.OpenSlide(wsi_path)
-        level_index = 3
+        level_index = 0
 
         print('Image dimension: ', slide.level_dimensions[level_index])
         print('Image downsamples: ', slide.level_downsamples[level_index])
@@ -250,8 +336,8 @@ for one_case in cases:
         mask_shape = slide.level_dimensions[level_index]
         print('Shape: ', slide.level_dimensions[level_index])
 
-        J.Paint(slide_pixels, slide.level_downsamples[level_index], mask_shape)
+        J.Paint_vessels(slide_pixels, slide.level_downsamples[level_index], mask_shape)
 
 print("Number of all annotations: ", count)
 
-print(training_list)
+# print(training_list)

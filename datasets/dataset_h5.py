@@ -228,7 +228,7 @@ class Whole_Slide_Bag_FP(Dataset):
 
         # print('crop_mask.size', crop_mask.size)
         
-        base_dir = 'Glioma_Extracted_Patch_512_nomask/' + self.slide_id
+        base_dir = 'Glioma_Extracted_Patch_512/' + self.slide_id
         if not os.path.exists(base_dir):
             os.mkdir(base_dir)
 

@@ -72,13 +72,15 @@ def remove_small_points(binary_img, threshold_area):
     # print('+++', num, img_label)
     #输出连通域的属性，包括面积等
     props = regionprops(img_label) 
+    # print('Number of props: ', len(props))
     ## adaptive threshold
     # props_area_list = sorted([props[i].area for i in range(len(props))]) 
     # threshold_area = props_area_list[-2]
     resMatrix = np.zeros(img_label.shape).astype(np.uint8)
     for i in range(0, len(props)):
         # print('--',props[i].area)
-        if props[i].area > threshold_area:
+        # if props[i].area > 400 and props[i].area < 1000 and props[i].eccentricity > 0.7:
+        if props[i].eccentricity < 0.75:
             tmp = (img_label == i + 1).astype(np.uint8)
             #组合所有符合条件的连通域
             resMatrix += tmp 
@@ -92,40 +94,36 @@ def remove_fragment(img_pth, threshold = 60):
     _, thresh = cv2.threshold(img_gray, 127, 255, type=cv2.THRESH_BINARY)
     ## method1
     thresh1 = thresh > 0
+    # res_img1 = morphology.remove_small_objects(thresh1, 20)
+    # res_img0 = morphology.remove_small_holes(thresh1, 20)
+    ## method2
+    # res_img1 = remove_small_points(thresh, 20)
+    # res_img2 = remove_small_points(thresh, 40)
     res_img3 = remove_small_points(thresh, threshold)
-    kernel = np.ones((3, 3), dtype=np.uint8)
-    res_img3 = cv2.dilate(res_img3, kernel, 3)  
+    
+   
 
-    thresh = np.where(res_img3 > 127, 0.0, 255.0)
-    thresh1 = thresh > 0
-    res_img4 = remove_small_points(thresh, threshold)
-    res_img4 = np.where(res_img4 > 127, 0.0, 255.0)
-    res_img4 = cv2.erode(res_img4, kernel, 3)    
-    res_img4 = np.where(res_img4 > 127, 0.0, 255.0)
-
-    return img_gray, res_img4
+    return res_img3
 
 if __name__ == '__main__':
     k = 7
-    base_dir = 'Glioma_Extracted_Patch_512/'
+    base_dir = '512Crop/'
     ids = os.listdir(base_dir)
     imager = ImageReadWrite()
-
     for one_id in tqdm.tqdm(ids):
         files = os.listdir(os.path.join(base_dir, one_id))
         ori = []
-
         for one_file in files:
-            if 'tissues_binary.jpeg' in one_file:
+            if '_removefrag' in one_file:
                 ori.append(one_file)
-            
         print('Number of ori: ', len(ori))
 
         temp = 0
+
         for one_jpeg in tqdm.tqdm(ori):
             temp += 1
             filename_png = os.path.join(base_dir, one_id, one_jpeg)
-            filename = filename_png.split('_tissues_binary.jpeg')[0]
-            _, res = remove_fragment(filename_png, 20)
-            savename = os.path.join(filename + '_removefrag.jpeg')
+            filename = filename_png.split('_removefrag.jpeg')[0]
+            res = remove_fragment(filename_png, 60)
+            savename = os.path.join(filename + '_test.jpeg')
             cv2.imwrite(savename, res)            
