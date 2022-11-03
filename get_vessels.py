@@ -232,10 +232,10 @@ class Json_Base:
             x = x / downsamples#.astype(int)
             y = y / downsamples#.astype(int)
 
-            x_max = int(x.max() + 10)
-            x_min = int(x.min() - 10)
-            y_max = int(y.max() + 10)
-            y_min = int(y.min() - 10)
+            x_max = int(x.max())
+            x_min = int(x.min())
+            y_max = int(y.max())
+            y_min = int(y.min())
 
             sign = False
             last_x = 0.0
@@ -249,6 +249,10 @@ class Json_Base:
             # draw.polygon(xy_list, fill=None, outline=(255))
             draw_mask.polygon(xy_list, fill=(255), outline=None)
 
+            mask2 = Image.new('L', mask_shape, 0)
+            draw_mask2 = ImageDraw.Draw(mask2)
+            # draw.polygon(xy_list, fill=None, outline=(255))
+            draw_mask2.polygon((x_max, y_max, x_max, y_min, x_min, y_min, x_min, y_max), fill=(255), outline=None)
 
                 # except:
                 #     print(color_id)
@@ -263,10 +267,12 @@ class Json_Base:
                 crop = ori_image.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2))  
                 crop.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_ori.jpeg')
                 crop_mask = mask.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) 
+                crop_mask2 = mask2.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) 
                 # ImageDraw.floodfill(crop_mask, (0, 0), (255))
                 # mask_npy = np.array(crop_mask) 
                 # np.save(self.case + '_mask.npy', mask_npy)
                 crop_mask.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask.jpeg')
+                crop_mask2.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask2.jpeg')
                 # np.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
 
     def Paint_vessels(self, image, downsamples, mask_shape):
