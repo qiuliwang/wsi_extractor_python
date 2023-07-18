@@ -44,9 +44,9 @@ def patching(WSI_object, **kwargs):
 
 def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_dir, 
                   patch_size = 2048, step_size = 2048, 
-                  seg_params = {'seg_level': -1, 'sthresh': 8, 'mthresh': 7, 'close': 4, 'use_otsu': True,
+                  seg_params = {'seg_level': -1, 'sthresh': 8, 'mthresh': 5, 'close': 4, 'use_otsu': True,
                   'keep_ids': 'none', 'exclude_ids': 'none'},
-                  filter_params = {'a_t':100, 'a_h': 16, 'max_n_holes':8}, 
+                  filter_params = {'a_t':100, 'a_h': 16, 'max_n_holes':4}, 
                   vis_params = {'vis_level': -1, 'line_thickness': 500},
                   patch_params = {'use_padding': True, 'contour_fn': 'four_pt'},
                   patch_level = 0,
@@ -163,6 +163,7 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
             else:
                 wsi = WSI_object.getOpenSlide()
                 best_level = wsi.get_best_level_for_downsample(64)
+                print('best_level: ', best_level)
                 current_seg_params['seg_level'] = best_level
 
         keep_ids = str(current_seg_params['keep_ids'])
@@ -185,8 +186,8 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
             df.loc[idx, 'status'] = 'failed_seg'
             continue
             
-        # print('vis_level: ', current_vis_params['vis_level'])
-        # print('seg_level: ', current_seg_params['seg_level'])
+        print('vis_level: ', current_vis_params['vis_level'])
+        print('seg_level: ', current_seg_params['seg_level'])
 
         df.loc[idx, 'vis_level'] = current_vis_params['vis_level']
         df.loc[idx, 'seg_level'] = current_seg_params['seg_level']
@@ -195,11 +196,11 @@ def seg_and_patch(source, save_dir, patch_save_dir, mask_save_dir, stitch_save_d
 
         seg_time_elapsed = -1
         if seg:
-            # print("====================")
-            # print("Here Segmentation.")
-            # print('current_seg_params', current_seg_params)
-            # print('current_filter_params', current_seg_params)
-            # print("====================")
+            print("====================")
+            print("Here Segmentation.")
+            print('current_seg_params', current_seg_params)
+            print('current_filter_params', current_seg_params)
+            print("====================")
             WSI_object, seg_time_elapsed = segment(WSI_object, current_seg_params, current_filter_params) 
 
         if save_mask:
@@ -300,10 +301,12 @@ if __name__ == '__main__':
         print("{} : {}".format(key, val))
         if key not in ['source']:
             os.makedirs(val, exist_ok=True)
-
-    seg_params = {'seg_level': -1, 'sthresh': 8, 'mthresh': 7, 'close': 4, 'use_otsu': False,
+    # CD4
+    # seg_params = {'seg_level': -1, 'sthresh': 5, 'mthresh': 7, 'close': 4, 'use_otsu': False,
+    # HE
+    seg_params = {'seg_level': -1, 'sthresh': 5, 'mthresh': 5, 'close': 4, 'use_otsu': False,
                   'keep_ids': 'none', 'exclude_ids': 'none'}
-    filter_params = {'a_t':10, 'a_h': 10, 'max_n_holes':8}
+    filter_params = {'a_t':10, 'a_h': 10, 'max_n_holes':0}
     vis_params = {'vis_level': -1, 'line_thickness': 250}
     patch_params = {'use_padding': True, 'contour_fn': 'four_pt'}
 
@@ -326,7 +329,7 @@ if __name__ == '__main__':
                    'patch_params': patch_params,
                   'vis_params': vis_params}
 
-    print(parameters)
+    print(seg_params)
 
     seg_times, patch_times = seg_and_patch(**directories, **parameters,
                                             patch_size = args.patch_size, step_size=args.patch_size, 

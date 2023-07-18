@@ -246,34 +246,37 @@ class Json_Base:
             
             mask = Image.new('L', mask_shape, 0)
             draw_mask = ImageDraw.Draw(mask)
-            # draw.polygon(xy_list, fill=None, outline=(255))
-            draw_mask.polygon(xy_list, fill=(255), outline=None)
+            draw_mask.polygon(xy_list, fill=None, outline=(255))
+            # draw_mask.polygon(xy_list, fill=(255), outline=None)
 
-            mask2 = Image.new('L', mask_shape, 0)
-            draw_mask2 = ImageDraw.Draw(mask2)
+            # mask2 = Image.new('L', mask_shape, 0)
+            # draw_mask2 = ImageDraw.Draw(mask2)
             # draw.polygon(xy_list, fill=None, outline=(255))
-            draw_mask2.polygon((x_max, y_max, x_max, y_min, x_min, y_min, x_min, y_max), fill=(255), outline=None)
+            # draw_mask2.polygon((x_max, y_max, x_max, y_min, x_min, y_min, x_min, y_max), fill=(255), outline=None)
 
                 # except:
                 #     print(color_id)
 
             # crop a single annotation
-            sign = 512
+            sign = 1024
             # if abs(x_max - x_min) <= sign and abs(y_max - y_min) <= sign and abs(x_max - x_min) > sign / 2 and abs(y_max - y_min) > sign / 2 :
             if abs(x_max - x_min) <= sign and abs(y_max - y_min) <= sign :
                 mid_x = x_min + (abs(x_max - x_min) / 2)
                 mid_y = y_min + (abs(y_max - y_min) / 2)
 
                 crop = ori_image.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2))  
-                crop.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_ori.jpeg')
+                crop.save('vessel_images/ori/' + self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_ori.jpeg')
+               
                 crop_mask = mask.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) 
-                crop_mask2 = mask2.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) 
-                # ImageDraw.floodfill(crop_mask, (0, 0), (255))
+                # crop_mask2 = mask2.crop((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) 
+
+                ImageDraw.floodfill(crop_mask, (0, 0), (255))
                 # mask_npy = np.array(crop_mask) 
-                # np.save(self.case + '_mask.npy', mask_npy)
-                crop_mask.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask.jpeg')
-                crop_mask2.save(self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask2.jpeg')
-                # np.save(self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
+                # np.save('vessel_images/mask1/' + self.case + '_mask.npy', mask_npy)
+
+                crop_mask.save('vessel_images/mask1/' + self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask.jpeg')
+                # crop_mask2.save('vessel_images/mask2/' + self.case + str((mid_x - sign/2, mid_y - sign/2, mid_x + sign/2, mid_y + sign/2)) + '_mask2.jpeg')
+                # np.save('vessel_images/mask2/' + self.case + str((x_min, y_min, x_max, y_max)) + '_mask.npy', mask_npy)
 
     def Paint_vessels(self, image, downsamples, mask_shape):
         anno_class = self.anno_class
@@ -316,9 +319,9 @@ count = 0
 sign = 0
 print(len(cases))
 
-training_list = ['B202012437-4.svs', 'B202105664-3.svs']
+training_list = cases
 for one_case in cases:
-    if one_case in training_list:
+    if one_case in training_list[15:]:
         print(one_case)
         wsi_path = '/home1/qiuliwang/Data/Glioma/svsData/' + one_case
         json_path = '/home1/qiuliwang/Data/Glioma/svsLabel/' + one_case[ : len(one_case) - 4] + '.json'

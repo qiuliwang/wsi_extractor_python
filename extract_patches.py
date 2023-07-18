@@ -32,7 +32,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 
 
-def compute_w_loader_(file_path, slide_id, output_path, wsi, mask, 
+def compute_w_loader_(file_path, slide_id, base_dir, output_path, wsi, mask, 
      batch_size = 8, verbose = 0, print_every=20, pretrained=True, 
     custom_downsample=1, target_patch_size=-1):
     """
@@ -47,7 +47,7 @@ def compute_w_loader_(file_path, slide_id, output_path, wsi, mask,
         custom_downsample: custom defined downscale factor of image patches
         target_patch_size: custom defined, rescaled image size before embedding
     """
-    dataset = Whole_Slide_Bag_FP(file_path=file_path, slide_id = slide_id, wsi=wsi, mask = mask, pretrained=False, 
+    dataset = Whole_Slide_Bag_FP(file_path=file_path, slide_id = slide_id, base_dir = base_dir, wsi=wsi, mask = mask, pretrained=False, 
         custom_downsample=custom_downsample, target_patch_size=target_patch_size)
     x, y = dataset[0]
     kwargs = {'num_workers': 4, 'pin_memory': True} if device.type == "cuda" else {}
@@ -82,6 +82,7 @@ if __name__ == '__main__':
 
     print('initializing dataset')
     csv_path = args.csv_path
+    print('csv_path: ', csv_path)
     if csv_path is None:
         raise NotImplementedError
 
@@ -93,42 +94,42 @@ if __name__ == '__main__':
     dest_files = os.listdir(os.path.join(args.feat_dir, 'pt_files'))
 
     total = len(bags_dataset)
+    print('total: ', total)
+    id_list = ['B201813472-2']
+
 
     for bag_candidate_idx in range(total):
     # for bag_candidate_idx in range(10, 50):
         slide_id = bags_dataset[bag_candidate_idx].split(args.slide_ext)[0]
-        if 'B202105664-3' in slide_id:
-            bag_name = slide_id+'.h5'
-            h5_file_path = os.path.join(args.data_h5_dir, 'patches', bag_name)
-            slide_file_path = os.path.join(args.data_slide_dir, slide_id+args.slide_ext)
-            print('\nprogress: {}/{}'.format(bag_candidate_idx, total))
-            print(slide_id)
+        print(slide_id)
+        bag_name = slide_id+'.h5'
+        h5_file_path = os.path.join(args.data_h5_dir, 'patches', bag_name)
+        slide_file_path = os.path.join(args.data_slide_dir, slide_id+args.slide_ext)
+        print('\nprogress: {}/{}'.format(bag_candidate_idx, total))
+        print(slide_id)
 
-            if not args.no_auto_skip and slide_id+'.pt' in dest_files:
-                print('skipped {}'.format(slide_id))
-                continue 
+        if not args.no_auto_skip and slide_id+'.pt' in dest_files:
+            print('skipped {}'.format(slide_id))
+            continue 
 
-            output_path = os.path.join(args.feat_dir, 'h5_files', bag_name)
-            time_start = time.time()
-            wsi = openslide.open_slide(slide_file_path)
+        output_path = os.path.join(args.feat_dir, 'h5_files', bag_name)
+        time_start = time.time()
+        wsi = openslide.open_slide(slide_file_path)
 
-            dimensions = wsi.level_dimensions[0]
-            print('Dimensions: ', dimensions)
+        dimensions = wsi.level_dimensions[0]
+        print('Dimensions: ', dimensions)
 
-            # downsamples = wsi.level_downsamples
-            # print('Downsamples: ', downsamples)
+        # downsamples = wsi.level_downsamples
+        # print('Downsamples: ', downsamples)
 
-            '''
-            
-            '''
+        # mask = Image.fromarray(np.load('full_size_mask/' + slide_id + '_mask.npy'))
+        mask = Image.fromarray(np.load('/home1/qiuliwang/Data/Glioma_annotation/B201813472-2-CD4_Dataset/thumb/FullSize_B201813472-2-CD4_mask.npy'))
+# 
+        # mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
+        mask = mask.convert('1')
 
-            mask = Image.fromarray(np.load('full_size_mask/' + slide_id + '_mask.npy'))
-
-            # mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
-            mask = mask.convert('1')
-
-            output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, mask, 
-                batch_size = args.batch_size, verbose = 1, print_every = 20, 
-                custom_downsample=args.custom_downsample, target_patch_size=args.target_patch_size)
-            time_elapsed = time.time() - time_start
-            print('\ncomputing features for {} took {} s'.format(output_file_path, time_elapsed))
+        output_file_path = compute_w_loader_(h5_file_path, slide_id, args.feat_dir, output_path, wsi, mask, 
+            batch_size = args.batch_size, verbose = 1, print_every = 20, 
+            custom_downsample=args.custom_downsample, target_patch_size=args.target_patch_size)
+        time_elapsed = time.time() - time_start
+        print('\ncomputing features for {} took {} s'.format(output_file_path, time_elapsed))

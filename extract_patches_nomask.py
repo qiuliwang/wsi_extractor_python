@@ -32,7 +32,7 @@ device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cp
 
 
 
-def compute_w_loader_(file_path, slide_id, output_path, wsi, 
+def compute_w_loader_(file_path, slide_id, output_path, wsi, base_dir,
      batch_size = 8, verbose = 0, print_every=20, pretrained=True, 
     custom_downsample=1, target_patch_size=-1):
     """
@@ -47,7 +47,7 @@ def compute_w_loader_(file_path, slide_id, output_path, wsi,
         custom_downsample: custom defined downscale factor of image patches
         target_patch_size: custom defined, rescaled image size before embedding
     """
-    dataset = Whole_Slide_Bag_No_Mask(file_path=file_path, slide_id = slide_id, wsi=wsi, pretrained=False, 
+    dataset = Whole_Slide_Bag_No_Mask(file_path=file_path, slide_id = slide_id, wsi=wsi, base_dir=base_dir, pretrained=False, 
         custom_downsample=custom_downsample, target_patch_size=target_patch_size)
     x, y = dataset[0]
     kwargs = {'num_workers': 4, 'pin_memory': True} if device.type == "cuda" else {}
@@ -112,7 +112,7 @@ if __name__ == '__main__':
             time_start = time.time()
             wsi = openslide.open_slide(slide_file_path)
 
-            dimensions = wsi.level_dimensions[0]
+            dimensions = wsi.level_dimensions[2]
             print('Dimensions: ', dimensions)
 
             # downsamples = wsi.level_downsamples
@@ -127,7 +127,7 @@ if __name__ == '__main__':
             # mask = mask.resize((dimensions[0], dimensions[1]), Image.ANTIALIAS)
             # mask = mask.convert('1')
 
-            output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, 
+            output_file_path = compute_w_loader_(h5_file_path, slide_id, output_path, wsi, args.feat_dir, 
                 batch_size = args.batch_size, verbose = 1, print_every = 20, 
                 custom_downsample=args.custom_downsample, target_patch_size=args.target_patch_size)
             time_elapsed = time.time() - time_start

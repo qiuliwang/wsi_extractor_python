@@ -159,12 +159,14 @@ class Whole_Slide_Bag_FP(Dataset):
     def __init__(self,
         file_path,
         wsi,
+        base_dir,
         mask,
         slide_id,
         pretrained=False,
         custom_transforms=None,
         custom_downsample=1,
         target_patch_size=-1
+        
         ):
         """
         Args:
@@ -178,6 +180,7 @@ class Whole_Slide_Bag_FP(Dataset):
         self.wsi = wsi
         self.mask = mask
         self.slide_id = slide_id
+        self.base_dir = base_dir
         if not custom_transforms:
             self.roi_transforms = eval_transforms(pretrained=pretrained)
         else:
@@ -228,16 +231,15 @@ class Whole_Slide_Bag_FP(Dataset):
 
         # print('crop_mask.size', crop_mask.size)
         
-        base_dir = 'Glioma_Extracted_Patch_512/' + self.slide_id
-        if not os.path.exists(base_dir):
-            os.mkdir(base_dir)
+        if not os.path.exists(self.base_dir + self.slide_id):
+            os.mkdir(self.base_dir + self.slide_id)
 
         if status[0] > 100 and status[0] < 6000 and status[1] > 100 and status[1] < 6000 and status[2] > 100 and status[2] < 6000: 
             # if random.randint(1,10) % 5 == 0:
-            img.save(base_dir + '/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg')
-            crop_mask.save(base_dir + '/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '_mask.jpeg')
+            img.save(self.base_dir + '/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg')
+            crop_mask.save(self.base_dir + '/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '_mask.jpeg')
             mask_npy = np.array(crop_mask) 
-            np.save(base_dir + '/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '_mask.npy', mask_npy)
+            np.save(self.base_dir + '/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '_mask.npy', mask_npy)
 			
         if self.target_patch_size is not None:
             img = img.resize(self.target_patch_size)
@@ -262,6 +264,7 @@ class Whole_Slide_Bag_No_Mask(Dataset):
     def __init__(self,
         file_path,
         wsi,
+        base_dir,
         slide_id,
         pretrained=False,
         custom_transforms=None,
@@ -279,6 +282,7 @@ class Whole_Slide_Bag_No_Mask(Dataset):
         self.pretrained=pretrained
         self.wsi = wsi
         self.slide_id = slide_id
+        self.base_dir = base_dir
         if not custom_transforms:
             self.roi_transforms = eval_transforms(pretrained=pretrained)
         else:
@@ -290,6 +294,7 @@ class Whole_Slide_Bag_No_Mask(Dataset):
             dset = f['coords']
             self.patch_level = f['coords'].attrs['patch_level']
             self.patch_size = f['coords'].attrs['patch_size']
+            print('patch_level: ', self.patch_level)
             self.length = len(dset)
             if target_patch_size > 0:
                 self.target_patch_size = (target_patch_size, ) * 2
@@ -326,7 +331,7 @@ class Whole_Slide_Bag_No_Mask(Dataset):
             
         if status[0] > 100 and status[0] < 6000 and status[1] > 100 and status[1] < 6000 and status[2] > 100 and status[2] < 6000: 
             # if random.randint(1,10) % 5 == 0:
-            img.save('Glioma_Extracted_Patch_512_nomask/' + self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg')
+            img.save(os.path.join(self.base_dir, self.slide_id + '_' + str(coord[0]) + '_' + str(coord[1]) + '.jpeg'))
 			
         if self.target_patch_size is not None:
             img = img.resize(self.target_patch_size)
