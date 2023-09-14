@@ -148,6 +148,7 @@ class Json_Base:
 
         x_ranges = []
         y_ranges = []
+
         for one_key in anno_class.keys():
             one_type = one_key
             if 'vessel' in one_type:
@@ -184,21 +185,75 @@ class Json_Base:
                     for one_x, one_y in zip(x, y):
                         xy_list.append((one_x, one_y))
 
-                    target_dir = 'vessel_random_testing'
+                    target_dir = 'vessel_random_training'
+                    sign = 1024
                     if x_max - x_min < 1024 and y_max - y_min < 1024:
-                        # draw.polygon(xy_list, fill=None, outline=(255))
+                        draw.polygon(xy_list, fill=None, outline=(255))
                         seed_x = random.randint(0, 128)
                         seed_y = random.randint(0, 128)
 
-                        x1 = int(x_mid + 512 + seed_x)
-                        x2 = int(x_mid - 512 + seed_x)
+                        x1 = int(x_mid + sign + seed_x)
+                        x2 = int(x_mid - sign + seed_x)
 
-                        y1 = int(y_mid + 512 + seed_y)
-                        y2 = int(y_mid - 512 + seed_y)
+                        y1 = int(y_mid + sign + seed_y)
+                        y2 = int(y_mid - sign + seed_y)
 
                         draw_mask.polygon(xy_list, fill=(255), outline=None)
+
+        for one_key in anno_class.keys():
+            one_type = one_key
+            if 'vessel' in one_type:
+                color_id = 0
+            elif 'necrosis' in one_type:
+                color_id = 1
+            else:
+                color_id = 2
+            print((one_type))
+            # print(color_id)
+
+            one_type_anno = anno_class[one_type]
+            if 'vessel' in one_type:
+                # Drawing each annotation
+                for one_anno in tqdm.tqdm(one_type_anno):
+                    x = np.array(one_anno[0])
+                    y = np.array(one_anno[1])
+                    x = x / downsamples#.astype(int)
+                    y = y / downsamples#.astype(int)
+
+                    x_max = x.max() 
+                    x_min = x.min() 
+                    y_max = y.max()
+                    y_min = y.min() 
+                    x_ranges.append(x.max() - x.min())
+                    y_ranges.append(y.max() - y.min())
+                    x_mid = (x_max + x_min) // 2
+                    y_mid = (y_max + y_min) // 2
+
+                    last_x = 0.0
+                    last_y = 0.0
+                    xy_list = []
+                    for one_x, one_y in zip(x, y):
+                        xy_list.append((one_x, one_y))
+
+                    target_dir = 'vessel_random_training'
+                    if x_max - x_min < 1024 and y_max - y_min < 1024:
+                        draw.polygon(xy_list, fill=None, outline=(255))
+
+                        seed_x = random.randint(0, 128)
+                        seed_y = random.randint(0, 128)
+
+                        x1 = int(x_mid + sign + seed_x)
+                        x2 = int(x_mid - sign + seed_x)
+
+                        y1 = int(y_mid + sign + seed_y)
+                        y2 = int(y_mid - sign + seed_y)
+
+                        # draw_mask.polygon(xy_list, fill=(255), outline=None)
                         crop = image.crop((x2, y2, x1, y1))  
-                        crop.save(os.path.join(target_dir, self.case + str((x2, y2, x1, y1)) + '_ori.jpeg'))
+                        crop.save(os.path.join(target_dir, self.case + str((x2, y2, x1, y1)) + '_overlay.jpeg'))
+
+                        crop_ori = ori_image.crop((x2, y2, x1, y1))  
+                        crop_ori.save(os.path.join(target_dir, self.case + str((x2, y2, x1, y1)) + '_ori.jpeg'))
 
                         crop_mask = mask.crop((x2, y2, x1, y1)) 
                         # ImageDraw.floodfill(crop_mask, (0, 0), (255))
@@ -273,7 +328,7 @@ train_count = 0
 sign = 0
 print(len(cases))
 
-training_list = ['B201902463-2', 'B202005692-5', 'B201813472-2', 'B202104270-3']
+training_list = ['B201812997-2',  'B202105664-14', 'B202012437-4', 'B202005122-2', 'B201814368-5', 'B202105664-3', 'B201812997-1', 'B201911880-10', 'B202005499-4', 'B202005279-3']
 
 for one_case in cases:
     if one_case.split('.svs')[0] in training_list:
@@ -299,14 +354,14 @@ for one_case in cases:
             print('Image dimension: ', slide.level_dimensions)
             print('Image downsamples: ', slide.level_downsamples)
 
-            # slide_pixels = slide.read_region((0, 0), level_index, slide.level_dimensions[level_index])
-            # slide_pixels = slide_pixels.convert('RGB')
+            slide_pixels = slide.read_region((0, 0), level_index, slide.level_dimensions[level_index])
+            slide_pixels = slide_pixels.convert('RGB')
 
-            # mask_shape = slide.level_dimensions[level_index]
-            # print('Shape: ', slide.level_dimensions[level_index])
+            mask_shape = slide.level_dimensions[level_index]
+            print('Shape: ', slide.level_dimensions[level_index])
 
-            # # J.Paint(slide_pixels, slide.level_downsamples[level_index], mask_shape)
-            # J.Paint_only_vessel(slide_pixels, slide.level_downsamples[level_index], mask_shape)
+            # J.Paint(slide_pixels, slide.level_downsamples[level_index], mask_shape)
+            J.Paint_only_vessel(slide_pixels, slide.level_downsamples[level_index], mask_shape)
 
 print("Number of all annotations: ", count)
 print("Number of all train annotations: ", train_count)
