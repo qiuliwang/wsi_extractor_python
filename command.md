@@ -3,13 +3,13 @@ python create_patches_wql.py --source CD56 --save_dir CD56_DataResult --patch_si
 
 python create_patches_wql.py --source /home1/qiuliwang/Data/Glioma_annotation/B201813472-2-CD4_Dataset/svs  --save_dir 13472_DataResult --patch_size 1024 --seg --patch --stitch
 
-python create_patches_wql.py --source /home1/qiuliwang/Data/Glioma/svsData  --save_dir Glioma_DataResult --patch_size 1024 --seg --patch --stitch
+python create_patches_wql.py --source /home1/qiuliwang/Data/Glioma_annotation/HE_Annotation/B201813472-2/svs_data  --save_dir B201813472-2 --patch_size 1024 --seg --patch --stitch
 
 ### get annotations
 python get_annotation_slide.py
 
 ### extract patches
-CUDA_VISIBLE_DEVICES=7 python extract_patches_nomask.py --data_h5_dir CD4_DataResult/ --data_slide_dir B201813472_svs/ --csv_path CD4_DataResult/process_list_autogen.csv --feat_dir CD4_Extracted_Patch --batch_size 1024 --slide_ext .svs
+CUDA_VISIBLE_DEVICES=7 python extract_patches_nomask.py --data_h5_dir B201813472-2/ --data_slide_dir /home1/qiuliwang/Data/Glioma_annotation/HE_Annotation/B201813472-2/svs_data --csv_path B201813472-2/process_list_autogen.csv --feat_dir B201813472-2_Extracted_Patch --batch_size 1024 --slide_ext .svs
 
 CUDA_VISIBLE_DEVICES=2 python extract_patches_nomask.py --data_h5_dir CD56_DataResult/ --data_slide_dir CD56 --csv_path CD56_DataResult/process_list_autogen.csv --feat_dir CD56_Extracted_Patch --batch_size 1024 --slide_ext .svs
 
